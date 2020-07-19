@@ -26,5 +26,8 @@ The report on the exploratory analysis of our data is included in the following 
   
 Our entire analysis, from loading the data up until making predictiongs, is contained in the files named `task*.R`.
 
+- `swearWords.txt`: an additional file to the analysis, for removing profanity.
+
+
 
 
