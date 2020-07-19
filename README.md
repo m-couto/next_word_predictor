@@ -24,6 +24,7 @@ The report on the exploratory analysis of our data is included in the following 
 - `milestone_report_1_files` folder
   - Check html file at: https://m-couto.github.io/next_word_predictor/milestone_report_1.html.
   
-Our entire analysis, from loading the data up until making predictiongs, is contained in the files of the form `task*.R`.
+Our entire analysis, from loading the data up until making predictiongs, is contained in the files named `task*.R`.
+
 
 
