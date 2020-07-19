@@ -3,7 +3,7 @@
 An NLP project on building an app for predicting the next word the user will write, a similar feature to the one in our phones when we're writing text messages.
   - Check available app at: https://m-couto.shinyapps.io/PredictNextWord/.
 
-In this project we used data from the HC Corpora corpus, which contains text data in four different languages: German, Finnish, Russian and English. We focus on the files corresponding to English, namely one data set with blog entries, another with news entries and a third with Twitter entries.
+In this project we used data from the HC Corpora corpus, more specifically text in English from blogs, news and Twitter.
 
 This repository contains a report on a first analysis of our data, namely:
 1. data cleansing and pre-processing;
