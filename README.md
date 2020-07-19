@@ -6,6 +6,8 @@ A project on building an app for predicting the next word the user will write.
 
 ## Explanation of files
 
+The data for this project is available at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip.
+
 
 
 The report on the exploratory analysis of our data is included in the following files:
