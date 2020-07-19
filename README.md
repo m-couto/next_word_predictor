@@ -28,6 +28,12 @@ Our entire analysis, from loading the data up until making predictiongs, is cont
 
 - `swearWords.txt`: an additional file to the analysis, for removing profanity.
 
+The app was built with the following files and it is available at: https://m-couto.shinyapps.io/PredictNextWord/.
 
+- `server.R`, `ui.R`
 
+The pitch presentation for this app lies in the following files:
 
+- `project_pitch.html`, `project_pitch.Rmd`
+- `input.png`, `output.png`: image attachments for the pitch presentation
+  - Check html file at: https://m-couto.github.io/next_word_predictor/project_pitch.html.
