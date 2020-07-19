@@ -1,0 +1,272 @@
+---
+title: "Exploratory analysis of natural language data"
+author: "Miguel Couto"
+date: "25 June 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(comment = "")
+```
+
+This report pertains to the capstone project of the Data Science specialization, in which we aim to build an app that predicts the next word after a sentence written by the user. Here we report our first step towards this goal by cleansing the data, pre-processing it and performing exploratory data analysis.
+
+
+### The data
+
+The data for this project comes from a corpus called HC Corpora and it can be downloaded [here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip). This contains text data sets in four different languages: German, Finnish, Russian and English. We focus on the files corresponding to the latter, namely one data set with blog entries, another with news entries and a third with Twitter entries.
+
+```{r cache=TRUE}
+setwd("~/Desktop/Data Science course/10. Data Science Capstone/final/en_US")
+
+con <- file("en_US.blogs.txt")
+USblog <- readLines(con)
+close(con)
+
+con <- file("en_US.news.txt")
+USnews <- readLines(con)
+close(con)
+
+con <- file("en_US.twitter.txt")
+UStwit <- readLines(con, skipNul = TRUE)
+close(con)
+    # skipNul = TRUE, because R found 4 embedded nuls in this file
+
+all <- c(USblog, USnews, UStwit)
+```
+
+The following table summarizes some basic properties of these three files, namely the number of entries of each data set, the total number of words, the average number of characters per entry and the memory used to store each data set in R.
+
+```{r cache=TRUE}
+library(knitr)
+
+all <- list(blog = USblog, news=USnews, twit=UStwit)
+
+# length
+nlines <- sapply(all, length)
+
+# nr words in file
+library(ngram)
+nwords <- sapply(all, wordcount)
+
+# average nr char per line
+meanchar <- sapply(all, function(x){ mean(nchar(x)) })
+# blog      news      twit 
+# 229.98695 201.16285  68.68054 
+
+# memory size
+size <- sapply(all, object.size)
+size <- as.character( round(size/10^6,1) )
+size <- paste(size, "MB")
+
+kable( data.frame(Number_lines = nlines, Number_words = nwords,
+                 Average_characters = meanchar, Memory = size) )
+```
+
+
+## Pre-processing and tokenization
+
+A quick overview of the data shows that it needs a lot of pre-processing and cleaning. We gathered all three files and took the following steps:
+
+1. convert/remove non-ASCII characters;
+2. convert all characters to lowercase;
+3. split data into sentences;
+4. remove sentences with profanity (see [here](http://www.bannedwordlist.com/lists/swearWords.txt));
+5. remove punctuation, symbols, numbers and URLs.
+
+Afterwards, we proceeded to *tokenize* the data, that is splitting it into separate words.
+
+Our ultimate goal is to predict the next word after a specific string, so it seems sensible to discard punctuation, symbols and numbers. We have also removed entire sentences containing profanity, since removing only profane words would be counter-productive to our ultimate goal.
+
+
+```{r cache=TRUE, message=FALSE}
+library(quanteda)
+
+tokenize <- function(filename=NULL, p=.6){
+    # filename: name of a text file
+    # p: percentage of original data in training data
+    # 60% by default
+    
+    if (!is.null(filename)){
+        # reading the file
+        con <- file(filename)
+        data <- readLines(con, skipNul = TRUE)
+        close(con)
+    }
+    else{
+        con <- file("en_US.blogs.txt")
+        USblog <- readLines(con)
+        close(con)
+        
+        con <- file("en_US.news.txt")
+        USnews <- readLines(con)
+        close(con)
+        
+        con <- file("en_US.twitter.txt")
+        UStwit <- readLines(con, skipNul = TRUE)
+        close(con)
+        
+        data <- c(USblog, USnews, UStwit)
+    }
+    
+    # sampling
+    set.seed(1234)
+    inTrain <- rbinom(length(data), 1, p)
+    train <- data[inTrain==1]
+    
+    # convert/remove non-ASCII elements
+    train <- iconv(train, from="UTF-8", to="ASCII", sub="")
+    
+    # convert to lowercase
+    train <- tolower(train)
+    
+    # split into sentences
+    train <- unlist(strsplit(train, "(?<=[[:punct:]])\\s(?=[a-z])", perl=T))
+    
+    # profanity filtering: remove sentences with profanity
+    con <- file("~/Desktop/Data Science course/10. Data Science Capstone/swearWords.txt")
+    badwords <- readLines(con, warn=F)
+    close(con)
+    train <- train[ - grep(paste(badwords,collapse="|"), train) ]
+    
+    # tokenize and remove punctuation, numbers, symbols, urls
+    tokens <- tokens(train, remove_punct=TRUE, remove_numbers=TRUE,
+                     remove_symbols=TRUE, remove_url=TRUE)
+    tokens
+}
+```
+
+
+## Exploratory data analysis
+
+We now present some further properties of the data, namely the most common words and expressions in the data sets.
+
+Given the sheer volume of the data, the runtime for pre-processing it and especially tokenizing it is quite lengthy. Therefore, we restrict our exploratory analysis to a sample of 30% of the data, which still contains a considerable amount of information.
+
+```{r cache=TRUE}
+setwd("~/Desktop/Data Science course/10. Data Science Capstone/final/en_US")
+alltokens <- tokenize(p=.3)
+```
+
+```{r cache=TRUE}
+print(paste("Number of tokens of training data:", sum(ntoken(alltokens))))
+```
+
+
+We started by investigating which were the most common words in our data. Given our ultimate aim of predicting the next word in a text being written, we also looked into the most frequent *n-grams*; these are expressions of n consecutive words in a text. The following plots summarize our findings.
+
+```{r cache=TRUE}
+library(ggplot2)
+
+ngramsplot <- function(token, n, k=length(token)){
+    # tokens: tokens of the texts in corpus
+        # PS. use tokenize from task1 to get tokens of 
+    # n: size of n-grams
+    # k: number of most freq n-grams
+    
+    # calculate the ngrams of each text in corpus
+    ngrams <- tokens_ngrams(token, n, concatenator = " ")
+    
+    # k most frequent ngrams
+    top_ngrams <- topfeatures(dfm(ngrams), k)
+    
+    # put into dataframe
+    df <- data.frame(words=names(top_ngrams), count=unname(top_ngrams))
+    df$words <- factor(df$words,
+                       levels=rev(names(top_ngrams)))
+    
+    # title and x-label
+    plottitle <- sprintf("Most frequent %d-grams", n)
+    xlabel <- sprintf("%d-grams", n)
+    
+    # plot
+    ggplot(df, aes(x=words, y=count)) +
+        geom_bar(stat="identity", color="black", fill="red2") +
+        coord_flip() +
+        labs(title = plottitle, x=xlabel, y="count")
+}
+```
+
+```{r cache=TRUE, fig.align="center"}
+ngramsplot(alltokens, 1, 20)
+```
+
+```{r cache=TRUE, fig.align="center"}
+ngramsplot(alltokens, 2, 20)
+```
+
+```{r cache=TRUE, fig.align="center"}
+ngramsplot(alltokens, 3, 20)
+```
+
+```{r cache=TRUE, fig.align="center"}
+ngramsplot(alltokens, 4, 20)
+```
+
+```{r cache=TRUE, fig.align="center"}
+ngramsplot(alltokens, 5, 20)
+```
+
+Unsurprisingly many of the most common n-grams include some of the most frequent words in the English language such as "the", "a", "and", "to" and "of".
+
+
+
+## A plan for prediction model
+
+The next step would be to create a model for, given a string of words, predicting the next word. This will involve statistical analysis, where we decide the word following a (n-1)-gram based on the probability of a word in the vocabulary fitting after that (n-1)-gram. These are usually called **n-gram models**. Several n-gram models have been created and are available in the literature, such as Good-Turing smoothing, Katz's backoff model and Kneser-Ney smoothing. I plan to implement one of these as my prediction model.
+
+```{r eval=FALSE}
+# sorting ngrams in decreasing order of frequency
+
+sortedngrams <- function(token, n){
+    # tokens: tokens of the texts in corpus
+        # PS. use tokenize from task1 to get tokens of 
+    # n: size of n-grams
+    
+    # get a sorted vector of frequency of words
+    if (n==1){
+        sorted <- dfm_sort(dfm(token), margin="features")
+    }
+    else{
+        ngrams <- tokens_ngrams(token, n, concatenator = " ")
+        sorted <- dfm_sort(dfm(ngrams), margin="features")
+    }
+    freqvec <- colSums(sorted)
+    
+    # into dataframe
+    df <- data.frame(ngrams=names(freqvec), count=unname(freqvec))
+    # ADDED:
+    print(object.size(df))
+    
+    # write into file
+    location <- sprintf("~/Desktop/Data Science course/10. Data Science Capstone/ngrams/sorted_%d_grams.csv", n)
+    write.csv(df, file = location)
+}
+
+sortedngrams(alltokens, 1)
+sortedngrams(alltokens, 2)
+sortedngrams(alltokens, 3)
+sortedngrams(alltokens, 4)
+sortedngrams(alltokens, 5)
+```
+
+
+Any of these requires the knowledge of the frequency of all n-grams in our training data. For this reason, we have recorded them for all tokens, bigrams, trigrams, 4-grams and 5-grams in our training data.
+
+A very important aspect of these frequencies is that the majority of them have very low frequency. The following table shows how much memory we could save if we discarded all frequencies of at most 5.
+
+```{r cache=TRUE}
+library(data.table)
+res <- sapply(1:5, function(n){
+    loc <- sprintf("~/Desktop/Data Science course/10. Data Science Capstone/ngrams/sorted_%d_grams.csv",
+                   n)
+    df <- fread(loc, header=TRUE)
+    c(nrow(df), sum(df$count>5))
+})
+
+kable( data.frame(n = 1:5, Before = res[1,], After = res[2,],
+                  Percentage = 100 - res[2,] / res[1,] * 100 ) )
+```
+
+
