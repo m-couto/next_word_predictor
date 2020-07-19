@@ -2,7 +2,7 @@
 
 A project on building an app for predicting the next word the user will write.
 
-The data for this project comes from a corpus called HC Corpora, which contains text data sets in four different languages: German, Finnish, Russian and English. We focus on the files corresponding to English, namely one data set with blog entries, another with news entries and a third with Twitter entries.
+In this project we used data from the HC Corpora corpus, which contains text data in four different languages: German, Finnish, Russian and English. We focus on the files corresponding to English, namely one data set with blog entries, another with news entries and a third with Twitter entries.
 
 This repository contains a report on a first analysis of our data, namely:
 1. data cleansing and pre-processing;
