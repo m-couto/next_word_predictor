@@ -16,8 +16,6 @@ Our prediction models were built into an app, which is now available at: https:/
 
 ## Explanation of files
 
-The data for this project is available at: .
-
 The report on the exploratory analysis of our data is included in the following files:
 
 - `milestone_report_1.Rmd`
