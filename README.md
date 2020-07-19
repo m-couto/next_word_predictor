@@ -13,6 +13,8 @@ Then, we used language models for predicting the next word the user will use, mo
 
 Our prediction models were built into an app, which is now available at: https://m-couto.shinyapps.io/PredictNextWord/. And we also built a presentation for pitching this app.
 
+This was the capstone project of my Data Science specialization.
+
 
 ## Explanation of files
 
