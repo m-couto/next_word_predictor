@@ -3,7 +3,9 @@
 An NLP project on building an app for predicting the next word the user will write, a similar feature to the one in our phones when we're writing text messages.
   - Check available app at: https://m-couto.shinyapps.io/PredictNextWord/.
 
-In this project we used data from the HC Corpora corpus, more specifically text in English from blogs, news and Twitter. This repository contains a report on a first analysis of our data, namely:
+In this project we used data from the HC Corpora corpus, more specifically text in English from blogs, news and Twitter. This data is available at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip.
+
+This repository contains a report on a first analysis of our data, namely:
 1. data cleansing and pre-processing;
 2. exploratory data analysis.
 
@@ -14,7 +16,7 @@ Our prediction models were built into an app, which is now available at: https:/
 
 ## Explanation of files
 
-The data for this project is available at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip.
+The data for this project is available at: .
 
 The report on the exploratory analysis of our data is included in the following files:
 
